@@ -1,0 +1,621 @@
+---
+import { getCollection, render } from "astro:content";
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import RichText from "@/components/Typography/RichText.astro";
+import Button from "@/components/Button.astro";
+import Img from "@/components/Media/Img.astro";
+import { PROJECTS } from "@/data/home.ts";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("work");
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+
+/* The rest of the shelf, minus whichever project this page is about. */
+const moreProjects = PROJECTS.filter(
+  (project) => !data.client.includes(project.client),
+);
+---
+
+<Layout
+  title={data.headline ?? data.title}
+  description={data.summary}
+  noindex={data.draft}
+>
+  <Fragment slot="head">
+    <script
+      is:inline
+      src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"
+    ></script>
+    <script
+      is:inline
+      src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/ScrollTrigger.min.js"
+    ></script>
+  </Fragment>
+
+  {/* Masthead: the outcome, and the two facts a reader needs */}
+  <Section paddingTop="navoverlap" paddingBottom="small" gap="6">
+    <div class="case-study_masthead" data-reveal="single">
+      <p class="case-study_crumb">
+        <a href="/#work">Work</a>
+        <span aria-hidden="true">/</span>
+        {data.title}
+      </p>
+      <Heading tag="h1" maxWidth={24}>
+        {data.headline ?? data.title}
+      </Heading>
+      <dl class="case-study_meta">
+        <div>
+          <dt>Client</dt>
+          <dd>{data.client}</dd>
+        </div>
+        <div>
+          <dt>Year</dt>
+          <dd>{data.year}</dd>
+        </div>
+      </dl>
+    </div>
+  </Section>
+
+  {/* Cover */}
+  <Section paddingTop="none" paddingBottom="small">
+    <div class="case-study_cover" data-reveal="single">
+      <Img src={data.cover} alt="" variant="full-width" />
+    </div>
+  </Section>
+
+  {/* The write-up, with its table of contents riding alongside */}
+  <Section paddingTop="none" paddingBottom="small">
+    <div
+      class="case-toc_layout"
+      data-toc-wrap
+      data-toc-levels="h2"
+      data-toc-offset="120"
+    >
+      <aside class="case-toc_sidebar">
+        <p class="case-toc_key">Contents</p>
+        <nav class="case-toc_list" aria-label="Table of contents" data-toc-list>
+          <a href="#" class="case-toc_link" data-toc-link>
+            <span data-toc-text />
+          </a>
+        </nav>
+      </aside>
+      <div class="case-study_article">
+        <RichText variant="main" class="case-study_body" data-toc-content>
+          <Content />
+        </RichText>
+        <div class="case-study_scope">
+          <p class="case-study_scope-key">Scope of work</p>
+          <ul class="case-study_chips">
+            {data.discipline.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+        {
+          data.site && (
+            <Button element="link" href={data.site}>
+              View live site
+            </Button>
+          )
+        }
+      </div>
+    </div>
+  </Section>
+
+  {/* More projects */}
+  <Section paddingTop="none">
+    <div class="case-more_wrap">
+      <Heading tag="h2" data-reveal="single">More projects</Heading>
+      <ul class="case-more_grid">
+        {
+          moreProjects.map((project) => (
+            <li data-reveal="row">
+              <a class="case-more_card" href={project.href}>
+                <span class="case-more_visual" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                  </svg>
+                  <span>{project.client} preview</span>
+                </span>
+                <span class="case-more_row">
+                  <span class="case-more_title">{project.title}</span>
+                  <span class="case-more_view">View project</span>
+                </span>
+                <span class="case-more_desc">{project.desc}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="case-more_all">
+        <a href="/#work">View all my projects</a>
+      </p>
+    </div>
+  </Section>
+
+  {/* The invitation */}
+  <Section paddingTop="none" paddingBottom="large">
+    <div class="case-study_close" data-reveal="single">
+      <Heading tag="h2" maxWidth={22}>
+        Like what you see? Open the conversation.
+      </Heading>
+      <Button element="link" href="/#contact" class="lg">
+        Book a call
+      </Button>
+    </div>
+  </Section>
+</Layout>
+
+<style is:global>
+  @layer components {
+    .case-study_masthead {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      gap: var(--space-5);
+
+      .case-study_crumb {
+        display: flex;
+        gap: 0.75rem;
+        font-family: var(--body-family);
+        font-size: var(--text-small);
+        letter-spacing: var(--letter-spacing-label-sm);
+        text-transform: uppercase;
+        color: var(--text-2);
+
+        a {
+          border-bottom: var(--border-width) solid var(--border);
+          transition: border-color var(--hover-duration) var(--hover-ease);
+          @media (hover: hover) {
+            &:hover {
+              border-bottom-color: var(--heading-accent);
+            }
+          }
+        }
+      }
+    }
+
+    /* Just the two facts a reader needs, side by side on one line. */
+    .case-study_meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4) var(--space-7);
+
+      div {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+      }
+      dt {
+        font-family: var(--body-family);
+        font-size: var(--step--2);
+        letter-spacing: var(--letter-spacing-label);
+        text-transform: uppercase;
+        color: var(--text-2);
+      }
+      dd {
+        font-size: var(--text-small);
+      }
+    }
+
+    .case-study_cover {
+      width: 100%;
+      overflow: clip;
+      border: var(--border-width) solid transparent;
+      border-radius: 0.6875rem;
+      background:
+        var(--paper-surface) padding-box,
+        var(--paper-ring) border-box;
+      box-shadow: var(--paper-inset), var(--paper-lift);
+    }
+
+    .case-study_article {
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      gap: var(--space-6);
+      min-width: 0;
+    }
+
+    /* The write-up reads at the narrow measure, headings in the display cut. */
+    .case-study_body {
+      width: 100%;
+      max-width: 66ch;
+
+      h2 {
+        margin-top: var(--space-7);
+        font-size: 1.728rem;
+        line-height: 1.15;
+        letter-spacing: var(--letter-spacing-heading);
+      }
+      strong {
+        font-weight: var(--primary-bold);
+      }
+    }
+
+    /* What the work covered, as struck chips. */
+    .case-study_scope {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .case-study_scope-key {
+      font-family: var(--body-family);
+      font-size: var(--step--2);
+      letter-spacing: var(--letter-spacing-label);
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+    .case-study_chips {
+      display: flex;
+      flex-flow: wrap;
+      gap: 0.625rem;
+      font-family: var(--body-family);
+      font-size: var(--text-small);
+
+      li {
+        padding: 0.4375rem 0.875rem;
+        border: var(--border-width) solid transparent;
+        border-radius: var(--radius-round);
+        background:
+          var(--paper-surface) padding-box,
+          var(--paper-ring) border-box;
+        box-shadow: var(--paper-inset);
+      }
+    }
+
+    .case-toc_layout {
+      width: 100%;
+      display: grid;
+      gap: var(--space-7);
+      align-items: start;
+      @media (width >= 64rem) {
+        grid-template-columns: minmax(0, 1fr) 13.75rem;
+        gap: var(--space-8);
+      }
+    }
+
+    .case-toc_sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+      @media (width >= 64rem) {
+        order: 2;
+        position: sticky;
+        top: 6.75rem;
+      }
+    }
+
+    .case-toc_key {
+      font-family: var(--body-family);
+      font-size: var(--step--2);
+      letter-spacing: var(--letter-spacing-label);
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+
+    .case-toc_list {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .case-toc_link {
+      padding: 0.4rem 0.5em 0.4rem 1em;
+      border-left: var(--border-width) solid var(--border);
+      font-family: var(--body-family);
+      font-size: var(--text-small);
+      line-height: var(--line-height-large);
+      color: var(--text-2);
+      text-decoration: none;
+      transition:
+        color var(--dur-quick, 180ms) var(--ease-temper, ease),
+        border-color var(--dur-quick, 180ms) var(--ease-temper, ease);
+      @media (hover: hover) {
+        &:hover {
+          color: var(--text);
+        }
+      }
+      &[data-toc-status="active"] {
+        color: var(--text);
+        border-left-color: var(--heading-accent);
+      }
+    }
+
+    /* The rest of the shelf. */
+    .case-more_wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      padding-top: var(--space-7);
+      border-top: var(--border-width) solid var(--border);
+    }
+    .case-more_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(16.25rem, 1fr));
+      gap: var(--site-gutter);
+    }
+    .case-more_card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      height: 100%;
+      padding: 0.625rem 0.625rem 1.375rem;
+      border: var(--border-width) solid transparent;
+      border-radius: 0.6875rem;
+      background:
+        var(--paper-surface) padding-box,
+        var(--paper-ring) border-box;
+      box-shadow: var(--paper-inset), var(--paper-lift);
+      transition: box-shadow var(--hover-duration) var(--hover-ease);
+      @media (hover: hover) {
+        &:hover {
+          box-shadow: var(--paper-inset), 0 16px 40px rgb(22 22 26 / 12%);
+        }
+      }
+    }
+    .case-more_visual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      aspect-ratio: 1 / 1;
+      background-color: var(--bone-sunken);
+      border-radius: var(--radius-small);
+      border-bottom: var(--border-width) solid var(--heading-accent);
+      font-size: var(--text-small);
+      letter-spacing: var(--letter-spacing-label-sm);
+      text-transform: uppercase;
+      color: var(--text-2);
+      text-align: center;
+
+      svg {
+        width: 1.25rem;
+        height: 1.25rem;
+        opacity: 0.55;
+      }
+    }
+    .case-more_row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-top: 0.375rem;
+    }
+    .case-more_title {
+      font-family: var(--display-family);
+      font-size: var(--h5);
+      line-height: var(--line-height-medium);
+    }
+    .case-more_view {
+      flex: none;
+      font-size: var(--step--2);
+      letter-spacing: var(--letter-spacing-label-sm);
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+    .case-more_desc {
+      font-size: var(--text-small);
+      line-height: var(--line-height-large);
+      color: var(--text-2);
+    }
+    .case-more_tags {
+      font-size: var(--step--2);
+      letter-spacing: var(--letter-spacing-label-sm);
+      text-transform: uppercase;
+      line-height: 1.5;
+      color: var(--text-2);
+    }
+    .case-more_all {
+      font-size: var(--text-small);
+      letter-spacing: var(--letter-spacing-label-sm);
+      text-transform: uppercase;
+
+      a {
+        color: var(--text-2);
+        border-bottom: var(--border-width) solid var(--border);
+        transition:
+          color var(--hover-duration) var(--hover-ease),
+          border-color var(--hover-duration) var(--hover-ease);
+        @media (hover: hover) {
+          &:hover {
+            color: var(--text);
+            border-bottom-color: var(--heading-accent);
+          }
+        }
+      }
+    }
+
+    /* The closing card: one line, one button, centred on paper. */
+    .case-study_close {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-5);
+      padding: var(--space-9) var(--space-5);
+      text-align: center;
+      border: var(--border-width) solid transparent;
+      border-top-color: var(--heading-accent);
+      border-radius: 0.6875rem;
+      background:
+        var(--paper-surface) padding-box,
+        var(--paper-ring) border-box;
+      box-shadow: var(--paper-inset), var(--paper-lift);
+    }
+  }
+</style>
+
+<script is:inline>
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initTableOfContents() {
+    document.querySelectorAll("[data-toc-wrap]").forEach((root) => {
+      const contentEl = root.querySelector("[data-toc-content]");
+      const listEl = root.querySelector("[data-toc-list]");
+      const templateLink = listEl?.querySelector("[data-toc-link]");
+      if (!contentEl || !listEl || !templateLink) return;
+
+      const levels = (root.getAttribute("data-toc-levels") || "h2,h3")
+        .split(",")
+        .map((l) => l.trim().toLowerCase())
+        .filter((l) => /^h[1-6]$/.test(l));
+      const levelSelector = levels.join(", ");
+      if (!levelSelector) return;
+
+      const offset = parseInt(root.getAttribute("data-toc-offset")) || 50;
+      const marker = "{skip}";
+
+      const slugCounts = new Map();
+
+      function slugify(text) {
+        let slug = text
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+        if (!slug) slug = "section";
+
+        const count = slugCounts.get(slug) || 0;
+        slugCounts.set(slug, count + 1);
+        return count === 0 ? slug : slug + "-" + (count + 1);
+      }
+
+      function stripMarker(el) {
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          if (node.textContent.includes(marker)) {
+            node.textContent = node.textContent.replace(marker, "").trim();
+          }
+        }
+      }
+
+      const allHeadings = Array.from(contentEl.querySelectorAll(levelSelector));
+      const headings = [];
+
+      allHeadings.forEach((heading) => {
+        if (heading.hasAttribute("data-toc-ignore")) return;
+        if (heading.textContent.includes(marker)) {
+          stripMarker(heading);
+          return;
+        }
+        const text = heading.textContent.trim();
+        if (!text) return;
+        headings.push(heading);
+      });
+
+      if (!headings.length) {
+        // Nothing to list: retire the rail rather than leave it empty.
+        root.querySelector(".case-toc_sidebar")?.remove();
+        return;
+      }
+
+      headings.forEach((heading) => {
+        if (!heading.id) {
+          heading.id = slugify(heading.textContent.trim());
+        }
+      });
+
+      const tocLinks = [];
+
+      headings.forEach((heading) => {
+        const clone = templateLink.cloneNode(true);
+        const textTarget = clone.querySelector("[data-toc-text]") || clone;
+        textTarget.textContent = heading.textContent.trim();
+
+        clone.href = "#" + heading.id;
+        clone.removeAttribute("data-toc-link");
+        clone.setAttribute("data-toc-item", "");
+
+        const level = heading.tagName.charAt(1);
+        clone.setAttribute("data-toc-depth", level);
+
+        listEl.appendChild(clone);
+        tocLinks.push(clone);
+      });
+
+      listEl.querySelectorAll("[data-toc-link]").forEach((el) => el.remove());
+
+      // Active state tracking via ScrollTrigger
+      if (typeof ScrollTrigger !== "undefined") {
+        function setActive(index) {
+          tocLinks.forEach((link) => link.setAttribute("data-toc-status", ""));
+          if (tocLinks[index])
+            tocLinks[index].setAttribute("data-toc-status", "active");
+        }
+
+        headings.forEach((heading, i) => {
+          const nextHeading = headings[i + 1];
+
+          ScrollTrigger.create({
+            trigger: heading,
+            start: "top " + (offset + 1) + "px",
+            endTrigger: nextHeading || contentEl,
+            end: nextHeading ? "top " + (offset + 1) + "px" : "bottom top",
+            onToggle: (self) => {
+              if (self.isActive) setActive(i);
+            },
+          });
+        });
+
+        if (
+          window.scrollY <=
+          headings[0].getBoundingClientRect().top + window.scrollY - offset
+        ) {
+          setActive(0);
+        }
+      }
+
+      // Click handler with smooth scroll
+      listEl.addEventListener("click", (e) => {
+        const link = e.target.closest("[data-toc-item]");
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const id = link.getAttribute("href")?.slice(1);
+        const target = document.getElementById(id);
+        if (!target) return;
+
+        if (
+          typeof lenis !== "undefined" &&
+          typeof lenis.scrollTo === "function"
+        ) {
+          lenis.scrollTo(target, { offset: -offset });
+        } else {
+          const y =
+            target.getBoundingClientRect().top + window.scrollY - offset;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      });
+    });
+  }
+
+  // Initialize Table of Contents for the article
+  document.addEventListener("DOMContentLoaded", () => {
+    initTableOfContents();
+  });
+</script>

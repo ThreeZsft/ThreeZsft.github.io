@@ -1,0 +1,274 @@
+---
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import Button from "@/components/Button.astro";
+import { TIMELINE } from "@/data/home.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+---
+{
+  render && (
+    <div class="about-main_wrap">
+      <div class="about-main_intro" data-reveal="single">
+        <Heading tag="h2">About</Heading>
+        <Paragraph>
+          I'm Josh. I run Temper out of Alberta and work with creative
+          businesses across Edmonton and Calgary. I got into this because the
+          sites I saw for people doing interesting work rarely looked like the
+          work. Fixing that turned out to be the job I wanted.
+        </Paragraph>
+        <Paragraph>
+          I design in the open, keep the reasoning written down, and build in
+          Webflow so you're not stuck with me afterward.
+        </Paragraph>
+        <div class="about-main_cta">
+          <Button element="link" href="#contact" class="lg">
+            Start a project
+          </Button>
+        </div>
+      </div>
+
+      <div class="about-main_column">
+        <div class="about-main_group" data-reveal="single">
+          <span class="about-main_key">Timeline</span>
+          <div class="about-main_deck">
+            {
+              TIMELINE.map((entry) => (
+                <div class="about-main_item">
+                  <div class="about-main_clip">
+                    <div class="about-main_pad">
+                      <article class="about-main_card">
+                        <span class="about-main_title">{entry.title}</span>
+                        <Eyebrow>{entry.year}</Eyebrow>
+                        <p class="about-main_text">{entry.org}</p>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+              ))
+            }
+            {/* The rest of the deck peeking out from under the top card. */}
+            <div class="about-main_peek is-first" aria-hidden="true">
+              <div />
+            </div>
+            <div class="about-main_peek is-second" aria-hidden="true">
+              <div />
+            </div>
+          </div>
+          <div class="about-main_toggle-row">
+            <button type="button" class="about-main_toggle" aria-expanded="false">
+              <span class="about-main_toggle-label">Show all</span>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .about-main_wrap {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+      gap: var(--space-8);
+
+      .about-main_intro {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        gap: 1.5rem;
+        max-width: 35rem;
+      }
+      .about-main_cta {
+        padding-top: 0.5rem;
+      }
+
+      .about-main_column {
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+      }
+      .about-main_group {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+      .about-main_key {
+        font-family: var(--body-family);
+        font-size: var(--text-small);
+        letter-spacing: var(--letter-spacing-label);
+        text-transform: uppercase;
+        color: var(--text-2);
+      }
+
+      .about-main_deck {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Every entry past the first is folded shut until the deck opens. */
+      .about-main_item {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows var(--dur-slow, 640ms) var(--ease-temper, ease);
+      }
+      .about-main_item:first-child,
+      .about-main_group[data-open] .about-main_item {
+        grid-template-rows: 1fr;
+      }
+      .about-main_clip {
+        min-height: 0;
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+      }
+      .about-main_item:not(:first-child) .about-main_pad {
+        padding-top: 1rem;
+      }
+
+      .about-main_card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1.5rem 1.75rem;
+        border: var(--border-width) solid transparent;
+        border-radius: 0.6875rem;
+        background:
+          var(--paper-surface) padding-box,
+          var(--paper-ring) border-box;
+        box-shadow: var(--paper-inset), var(--paper-lift);
+      }
+      .about-main_title {
+        font-family: var(--display-family);
+        font-size: 1.728rem;
+        line-height: 1.15;
+      }
+      .about-main_text {
+        font-size: 1rem;
+        line-height: var(--line-height-large);
+        color: var(--text-2);
+        max-width: 52ch;
+      }
+
+      /* Two card edges showing beneath the pile while it is closed. */
+      .about-main_peek {
+        position: absolute;
+        height: 1.5rem;
+        border-radius: 0 0 0.6875rem 0.6875rem;
+        transition:
+          opacity var(--dur-base, 320ms) var(--ease-temper, ease),
+          translate var(--dur-base, 320ms) var(--ease-temper, ease);
+
+        > div {
+          position: absolute;
+          inset: 1px;
+          border-radius: 0 0 0.625rem 0.625rem;
+        }
+      }
+      .about-main_peek.is-first {
+        left: 0.5rem;
+        right: 0.5rem;
+        bottom: -0.5625rem;
+        z-index: 1;
+        background: #e2dcd0;
+        box-shadow: 0 8px 20px rgb(22 22 26 / 6%);
+        > div {
+          background: #f1ede5;
+        }
+      }
+      .about-main_peek.is-second {
+        left: 1.125rem;
+        right: 1.125rem;
+        bottom: -1.0625rem;
+        z-index: 0;
+        background: #d8d2c6;
+        box-shadow: 0 8px 20px rgb(22 22 26 / 5%);
+        > div {
+          background: #ece7de;
+        }
+      }
+      .about-main_group[data-open] .about-main_peek {
+        opacity: 0;
+        translate: 0 -1rem;
+      }
+
+      .about-main_toggle-row {
+        display: flex;
+        justify-content: center;
+        padding-top: 1.75rem;
+        transition: padding var(--dur-slow, 640ms) var(--ease-temper, ease);
+      }
+      .about-main_group[data-open] .about-main_toggle-row {
+        padding-top: 0.25rem;
+      }
+
+      .about-main_toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        height: 2.5rem;
+        padding: 0 1.125rem 0 1.25rem;
+        border-radius: var(--radius-round);
+        background-color: var(--bone-raised-2);
+        border: var(--border-width) solid var(--border);
+        box-shadow: 0 4px 14px rgb(22 22 26 / 6%);
+        font-family: var(--body-family);
+        font-size: var(--text-small);
+        letter-spacing: var(--letter-spacing-label-sm);
+        text-transform: uppercase;
+        color: var(--text);
+        transition: border-color var(--dur-quick, 180ms) var(--ease-temper, ease);
+        @media (hover: hover) {
+          &:hover {
+            border-color: var(--ember-500);
+          }
+        }
+        &:active {
+          box-shadow: var(--shadow-inset);
+        }
+
+        svg {
+          transition: transform var(--dur-base, 320ms) var(--ease-temper, ease);
+        }
+      }
+      .about-main_group[data-open] .about-main_toggle svg {
+        transform: rotate(180deg);
+      }
+    }
+  }
+</style>
+
+<script>
+  for (const group of document.querySelectorAll<HTMLElement>(".about-main_group")) {
+    const toggle = group.querySelector<HTMLButtonElement>(".about-main_toggle");
+    const label = group.querySelector<HTMLElement>(".about-main_toggle-label");
+    toggle?.addEventListener("click", () => {
+      const open = !group.hasAttribute("data-open");
+      group.toggleAttribute("data-open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      if (label) label.textContent = open ? "Hide" : "Show all";
+    });
+  }
+</script>

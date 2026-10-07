@@ -1,0 +1,60 @@
+---
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/Wrapper/Section.astro";
+import SectionHeroStack from "@/components/Content/SectionHeroStack.astro";
+import ContentQuoteMain from "@/components/Content/ContentQuoteMain.astro";
+import ContentServicesMain from "@/components/Content/ContentServicesMain.astro";
+import ContentAboutMain from "@/components/Content/ContentAboutMain.astro";
+import ContentProcessMain from "@/components/Content/ContentProcessMain.astro";
+import ContentPricingMain from "@/components/Content/ContentPricingMain.astro";
+import ContentFaqMain from "@/components/Content/ContentFaqMain.astro";
+import ContentContactMain from "@/components/Content/ContentContactMain.astro";
+---
+
+<Layout
+  title="Web design for small creative businesses in Alberta"
+  description="Custom websites for small creative businesses in Calgary, Edmonton, and across Alberta. Brand, design, code, and launch handled by one designer, start to finish."
+>
+  {/* Hero and work: one scroll movement */}
+  <SectionHeroStack />
+
+  {/* Testimonial: shows only once there is a real quote */}
+  <Section gap="6">
+    <ContentQuoteMain />
+  </Section>
+
+  {/*
+    Everything below is separated by its bottom padding alone, as the design
+    is: only the two sections above carry any space on top.
+  */}
+
+  {/* Services */}
+  <Section id="services" paddingTop="small">
+    <ContentServicesMain />
+  </Section>
+
+  {/* About */}
+  <Section id="about" paddingTop="none">
+    <ContentAboutMain />
+  </Section>
+
+  {/* Process */}
+  <Section id="process" paddingTop="none" gap="7">
+    <ContentProcessMain />
+  </Section>
+
+  {/* Pricing */}
+  <Section id="pricing" paddingTop="none" gap="7">
+    <ContentPricingMain />
+  </Section>
+
+  {/* Questions */}
+  <Section paddingTop="none">
+    <ContentFaqMain />
+  </Section>
+
+  {/* Contact */}
+  <Section id="contact" paddingTop="none" paddingBottom="large">
+    <ContentContactMain />
+  </Section>
+</Layout>

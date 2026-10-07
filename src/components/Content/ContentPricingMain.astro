@@ -1,0 +1,188 @@
+---
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import Button from "@/components/Button.astro";
+import Grid from "@/components/Wrapper/Grid.astro";
+import { TIERS } from "@/data/home.ts";
+
+/** The mark the follower badge shows for each package. */
+const GLYPHS = ["page", "pages", "star"];
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+---
+{
+  render && (
+    <div class="pricing-main_wrap">
+      <div class="pricing-main_head">
+        <div class="pricing-main_intro" data-reveal="single">
+          <Eyebrow tag="h2">Pricing</Eyebrow>
+          <Heading tag="h3" variant="h2">
+            What it costs
+          </Heading>
+        </div>
+        <Paragraph variant="small" maxWidth={44} class="pricing-main_lead">
+          Fixed prices, stated up front. You own the site when we're done.
+        </Paragraph>
+      </div>
+      <Grid class="pricing-main_layout" large={3} xsmall={1} small={1} medium={1}>
+        {TIERS.map((tier, index) => (
+          <article
+            class:list={["pricing-main_tier", tier.featured && "featured"]}
+            data-reveal="row"
+            data-glyph={GLYPHS[index]}
+            data-label={tier.name}
+          >
+            <header class="pricing-main_meta">
+              <h4 class="pricing-main_name">{tier.name}</h4>
+              <span>{tier.weeks}</span>
+            </header>
+            <p class="pricing-main_price">{tier.price}</p>
+            <p class="pricing-main_for">{tier.for}</p>
+            <div class="pricing-main_cta">
+              <Button
+                element="link"
+                href="#contact"
+                emphasis={tier.featured ? "primary" : "secondary"}
+                data-tier={tier.name}
+              >
+                {tier.cta}
+              </Button>
+            </div>
+          </article>
+        ))}
+      </Grid>
+    </div>
+  )
+}
+
+<script>
+  import { setFollower } from "@/scripts/motion.ts";
+
+  for (const button of document.querySelectorAll<HTMLElement>("[data-tier]")) {
+    button.addEventListener("click", () => {
+      const select = document.querySelector<HTMLSelectElement>(
+        'select[name="service"]',
+      );
+      if (select) select.value = button.dataset.tier || "";
+    });
+  }
+
+  for (const tier of document.querySelectorAll<HTMLElement>(".pricing-main_tier")) {
+    tier.addEventListener("pointerenter", () =>
+      setFollower({
+        label: tier.dataset.label || "",
+        glyph: tier.dataset.glyph || "page",
+      }),
+    );
+    tier.addEventListener("pointerleave", () => setFollower(null));
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .pricing-main_wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-7);
+
+      .pricing-main_head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        flex-wrap: wrap;
+        gap: var(--space-5);
+      }
+      .pricing-main_intro {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        max-width: 40rem;
+      }
+      .pricing-main_lead {
+        color: var(--text-2);
+      }
+      .pricing-main_layout {
+        align-items: stretch;
+      }
+
+      .pricing-main_tier {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        height: 100%;
+        padding: 1.75rem;
+        border: var(--border-width) solid transparent;
+        border-top-width: var(--border-thick);
+        border-radius: 0.6875rem;
+        background:
+          var(--paper-surface) padding-box,
+          var(--paper-ring) border-box;
+        box-shadow: var(--paper-inset), var(--paper-lift);
+        transition: opacity var(--hover-duration) var(--hover-ease);
+
+        /* One point of heat: the recommended package carries the ember edge
+           and warms its own shadow. */
+        &.featured {
+          border-top-color: var(--heading-accent);
+          box-shadow: var(--paper-inset), 0 16px 40px rgb(232 88 30 / 18%);
+        }
+      }
+
+      /* Weighing one package quiets the other two. */
+      @media (hover: hover) {
+        .pricing-main_layout:hover .pricing-main_tier:not(:hover) {
+          opacity: 0.5;
+        }
+      }
+
+      /* Name and timing share a spaced-caps line above the figure. */
+      .pricing-main_meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.5rem;
+        font-family: var(--body-family);
+        font-size: var(--text-small);
+        font-weight: var(--primary-regular);
+        letter-spacing: var(--letter-spacing-label-sm);
+        text-transform: uppercase;
+        color: var(--text-2);
+
+        .pricing-main_name {
+          font: inherit;
+          letter-spacing: inherit;
+        }
+      }
+
+      /* The figure is the display voice: the largest thing on the card. */
+      .pricing-main_price {
+        font-family: var(--display-family);
+        font-size: 2.986rem;
+        line-height: 1;
+        letter-spacing: var(--letter-spacing-tight);
+      }
+
+      .pricing-main_for {
+        font-size: 1rem;
+        line-height: var(--line-height-large);
+      }
+
+      .pricing-main_cta {
+        margin-top: auto;
+        padding-top: 0.5rem;
+
+        .button_wrap {
+          display: flex;
+          width: 100%;
+        }
+      }
+    }
+  }
+</style>

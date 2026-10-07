@@ -1,0 +1,270 @@
+---
+import Availability from "@/components/Item/Availability.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Button from "@/components/Button.astro";
+import Form from "@/components/Form/Form.astro";
+import { BOOKING_URL, EMAIL, SERVICE_OPTIONS, SOCIAL_LINKS } from "@/data/home.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+---
+
+{
+  render && (
+    <div class="contact-main_wrap">
+      <div class="contact-main_masthead" data-reveal="single">
+        <Availability />
+        <Heading tag="h2">
+          Let's put your work out <em class="contact-main_accent">front</em>.
+        </Heading>
+      </div>
+
+      <div class="contact-main_layout">
+        <div class="contact-main_intro" data-reveal="single">
+          <p class="contact-main_copy">
+            Send a link to your work and a line about what you need.
+          </p>
+          <dl class="contact-main_direct">
+            <div class="contact-main_row">
+              <dt>Direct line</dt>
+              <dd>
+                <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
+              </dd>
+            </div>
+            <div class="contact-main_row">
+              <dt>Book a call</dt>
+              <dd>
+                <a href={BOOKING_URL}>{BOOKING_URL}</a>
+              </dd>
+            </div>
+          </dl>
+          <ul class="contact-main_social">
+            {SOCIAL_LINKS.map((link) => (
+              <li>
+                <a href={link.href}>{link.label}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <Form
+          name="contact"
+          successMessage="Thanks. I'll reply within two business days."
+          class="contact-main_form"
+        >
+          <div class="contact-main_pair">
+            <label>
+              Name*
+              <input type="text" name="name" placeholder="Your name" required />
+            </label>
+            <label>
+              Email*
+              <input
+                type="email"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+            </label>
+          </div>
+          <label>
+            Link to your work
+            <input type="url" name="work" placeholder="https://" />
+          </label>
+          <label>
+            What are you after?
+            <select name="service">
+              {SERVICE_OPTIONS.map((option) => (
+                <option value={option} selected={option === "Not sure yet"}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            A few lines about the project*
+            <textarea
+              name="message"
+              rows="4"
+              placeholder="A few lines is plenty."
+              required
+            />
+          </label>
+          <div class="contact-main_send">
+            <span class="contact-main_reply">Replies within two business days.</span>
+            <Button type="submit">Send it</Button>
+          </div>
+        </Form>
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .contact-main_wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+
+      .contact-main_masthead {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        gap: var(--space-5);
+      }
+      .contact-main_accent {
+        color: var(--ember-500);
+        font-style: italic;
+      }
+
+      .contact-main_layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(18.75rem, 1fr));
+        gap: var(--space-8);
+        align-items: start;
+      }
+
+      .contact-main_intro {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        gap: 1.75rem;
+        max-width: 27.5rem;
+      }
+      .contact-main_copy {
+        font-size: 1rem;
+        line-height: var(--line-height-huge);
+      }
+
+      /* Label and line: the spaced-caps key beside the plain answer. */
+      .contact-main_direct {
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+        font-size: 1rem;
+        line-height: var(--line-height-large);
+      }
+      .contact-main_row {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+
+        dt {
+          min-width: 6rem;
+          padding-top: 0.25rem;
+          font-family: var(--body-family);
+          font-size: var(--step--2);
+          letter-spacing: var(--letter-spacing-label);
+          text-transform: uppercase;
+          color: var(--text-2);
+        }
+        dd a {
+          border-bottom: var(--border-width) solid var(--border);
+          transition: border-color var(--hover-duration) var(--hover-ease);
+          @media (hover: hover) {
+            &:hover {
+              border-bottom-color: var(--heading-accent);
+            }
+          }
+        }
+      }
+
+      .contact-main_social {
+        display: flex;
+        flex-flow: wrap;
+        gap: 1.5rem;
+        font-size: var(--text-small);
+        letter-spacing: var(--letter-spacing-label-sm);
+        text-transform: uppercase;
+
+        a {
+          color: var(--text-2);
+          border-bottom: var(--border-width) solid var(--border);
+          transition: border-color var(--hover-duration) var(--hover-ease);
+          @media (hover: hover) {
+            &:hover {
+              border-bottom-color: var(--heading-accent);
+            }
+          }
+        }
+      }
+
+      /* The form is bare on the ground: keys above, a single rule beneath
+         each answer. No card. */
+      .contact-main_form {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+
+        .contact-main_pair {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+          gap: 2rem;
+        }
+
+        label {
+          display: flex;
+          flex-direction: column;
+          gap: 0.625rem;
+          font-family: var(--body-family);
+          font-size: var(--step--2);
+          letter-spacing: var(--letter-spacing-label);
+          text-transform: uppercase;
+          color: var(--text-2);
+        }
+
+        input,
+        select,
+        textarea {
+          all: unset;
+          box-sizing: border-box;
+          width: 100%;
+          font-family: var(--body-family);
+          font-size: 1rem;
+          line-height: var(--line-height-large);
+          letter-spacing: normal;
+          text-transform: none;
+          color: var(--text);
+          padding: 0.5rem 0 0.625rem;
+          border-bottom: var(--border-width) solid var(--border);
+          border-radius: 0;
+          transition: border-color var(--hover-duration) var(--hover-ease);
+
+          &::placeholder {
+            color: var(--text-muted);
+          }
+          &:focus-visible {
+            border-bottom-color: var(--focus-ring);
+            outline: none;
+          }
+        }
+        textarea {
+          resize: vertical;
+          min-height: 6rem;
+        }
+
+        .contact-main_send {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+
+          .contact-main_reply {
+            font-size: var(--text-small);
+            letter-spacing: normal;
+            text-transform: none;
+            color: var(--text-muted);
+          }
+        }
+      }
+    }
+  }
+</style>

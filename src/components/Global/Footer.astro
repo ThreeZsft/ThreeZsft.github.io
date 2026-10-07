@@ -1,0 +1,165 @@
+---
+import { EMAIL, NAV_LINKS, SOCIAL_LINKS } from "@/data/home.ts";
+import LogoPane from "@/components/Brand/LogoPane.astro";
+import { SITE_NAME } from "@/consts.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+---
+{
+  render && (
+    <footer class="footer_wrap">
+      <div class="footer_inner">
+        <div class="footer_top">
+          <div class="footer_brand">
+            <a class="footer_logo" href="/" aria-label={SITE_NAME}>
+              <LogoPane />
+              <span class="footer_wordmark">{SITE_NAME}</span>
+            </a>
+            <p class="footer_line">Temper · Alberta</p>
+            <p class="footer_line">Built with care.</p>
+          </div>
+          <nav aria-label="Footer">
+            <ul class="footer_links">
+              {NAV_LINKS.map((link) => (
+                <li>
+                  <a class="footer_link" href={link.href}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+              <li>
+                <a class="footer_link" href={`mailto:${EMAIL}`}>
+                  {EMAIL}
+                </a>
+              </li>
+              {SOCIAL_LINKS.map((link) => (
+                <li>
+                  <a class="footer_link" href={link.href}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+        <div class="footer_bottom">
+          <p class="footer_copyright text-style-small">© <span id="year">{new Date().getFullYear()}</span>&#160; {SITE_NAME}</p>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+<script>
+  const year = document.querySelector<HTMLSpanElement>("#year");
+
+  if (year) {
+    year.textContent = new Date().getFullYear().toString();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .nav_logo,
+    .footer_logo {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .footer_brand {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .footer_wordmark {
+      font-family: var(--display-family);
+      font-size: 1rem;
+      letter-spacing: var(--letter-spacing-heading);
+    }
+    .footer_line {
+      font-size: var(--text-small);
+      color: var(--text-2);
+    }
+
+    .footer_wrap {
+      display: flex;
+      justify-content: center;
+      /* Deep water under the last line, the way the design leaves the page. */
+      padding-block: 2rem calc(2rem + clamp(6rem, 16vh, 10rem) / 2);
+      padding-inline: var(--site-margin);
+      color: var(--text);
+      border-top: var(--border-width) solid var(--border);
+    }
+
+    .footer_inner {
+      width: 100%;
+      max-width: var(--max-width-main);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+
+    .footer_top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4) var(--space-6);
+    }
+
+    .footer_logo {
+      transition: opacity var(--hover-duration) var(--hover-ease);
+      /* Present, but contained: the window stays clear of the lines below. */
+      .logo-pane {
+        width: 2.75rem;
+        height: 2.75rem;
+        pointer-events: none;
+      }
+      @media (hover: hover) {
+        &:hover {
+          opacity: 0.6;
+        }
+      }
+    }
+
+    .footer_links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: var(--text-small);
+      font-weight: var(--primary-regular);
+      letter-spacing: var(--letter-spacing-label-sm);
+      text-transform: uppercase;
+    }
+
+    .footer_link {
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color var(--hover-duration) var(--hover-ease);
+      @media (hover: hover) {
+        &:hover {
+          color: var(--text);
+        }
+      }
+    }
+
+    .footer_bottom {
+      padding-top: var(--space-4);
+      border-top: var(--border-width) solid var(--border);
+    }
+
+    .footer_copyright {
+      color: var(--text-2);
+      letter-spacing: var(--letter-spacing-label-sm);
+      text-transform: uppercase;
+      text-align: right;
+    }
+  }
+</style>

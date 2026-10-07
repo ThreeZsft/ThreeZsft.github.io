@@ -1,0 +1,152 @@
+---
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+---
+
+{render && <canvas class="dot-field" aria-hidden="true" />}
+
+<style is:global>
+  @layer components {
+    /**
+     * Sits above the page background and below everything in flow, so a
+     * themed section simply paints over it. Nothing here is interactive.
+     */
+    .dot-field {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  }
+</style>
+
+<script>
+  import { clamp, lerp, rafLoop, reduced, smoothstep } from "@/scripts/motion.ts";
+
+  const canvas = document.querySelector<HTMLCanvasElement>(".dot-field");
+  const ctx = canvas?.getContext("2d");
+
+  if (canvas && ctx) {
+    const GRID = 26; // spacing between dots
+    const REACH = 150; // how far the pointer's influence carries
+    const PUSH = reduced() ? 0 : 9; // how far a dot is shoved aside
+
+    let width = 0;
+    let height = 0;
+    // Drawn position trails the pointer; the target is where it actually is.
+    let x = -9999;
+    let y = -9999;
+    let targetX = -9999;
+    let targetY = -9999;
+    let strength = 0;
+    let lastTouch = 0;
+    let dirty = true;
+
+    const size = () => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      dirty = true;
+    };
+
+    const move = (px: number, py: number) => {
+      targetX = px;
+      targetY = py;
+      strength = 1;
+      dirty = true;
+    };
+
+    size();
+    window.addEventListener("resize", size);
+    window.addEventListener(
+      "pointermove",
+      (event) => {
+        if (event.pointerType !== "touch") move(event.clientX, event.clientY);
+      },
+      { passive: true },
+    );
+    window.addEventListener(
+      "touchmove",
+      (event) => {
+        const touch = event.touches[0];
+        if (touch) move(touch.clientX, touch.clientY);
+      },
+      { passive: true },
+    );
+    window.addEventListener("touchend", () => {
+      lastTouch = performance.now();
+    });
+    window.addEventListener("pointerleave", () => {
+      targetX = -9999;
+      targetY = -9999;
+    });
+
+    rafLoop(() => {
+      x = lerp(x, targetX, 0.2);
+      y = lerp(y, targetY, 0.2);
+
+      // Fade the effect out once the pointer leaves, or shortly after a tap.
+      const released = lastTouch && performance.now() - lastTouch > 500;
+      if (released || targetX < -1000) strength -= 0.05;
+      strength = clamp(strength);
+
+      // Nothing is moving and nothing is lit: skip the repaint entirely.
+      if (!dirty && strength === 0) return;
+      dirty = strength > 0;
+
+      ctx.clearRect(0, 0, width, height);
+      // Each cell is a tiny pane: a square that swells, slides aside and
+      // warms as the pointer passes, so the ground reads as one glass grid.
+      for (let dotY = 13; dotY < height; dotY += GRID) {
+        for (let dotX = 13; dotX < width; dotX += GRID) {
+          const dx = dotX - x;
+          const dy = dotY - y;
+          const distance = Math.hypot(dx, dy);
+          let side = 2;
+          let offsetX = 0;
+          let offsetY = 0;
+          let shearX = 0;
+          let shearY = 0;
+          let color = "rgba(22, 22, 26, 0.17)";
+
+          if (distance < REACH && strength > 0) {
+            const force = smoothstep(1 - distance / REACH) * strength;
+            side = 2 + 3.8 * force;
+            offsetX = (dx / (distance || 1)) * PUSH * force;
+            offsetY = (dy / (distance || 1)) * PUSH * force;
+            // Shoved away, but leaning back toward the hand.
+            shearX = (-dx / (distance || 1)) * force * 0.6;
+            shearY = (-dy / (distance || 1)) * force * 0.6;
+            // The one point of heat follows the hand.
+            color = `rgba(232, 88, 30, ${0.2 + 0.7 * force})`;
+          }
+
+          ctx.fillStyle = color;
+          if (shearX || shearY) {
+            ctx.save();
+            ctx.translate(dotX + offsetX, dotY + offsetY);
+            ctx.transform(1, shearY, shearX, 1, 0, 0);
+            ctx.fillRect(-side / 2, -side / 2, side, side);
+            ctx.restore();
+          } else {
+            ctx.fillRect(
+              dotX + offsetX - side / 2,
+              dotY + offsetY - side / 2,
+              side,
+              side,
+            );
+          }
+        }
+      }
+    });
+  }
+</script>

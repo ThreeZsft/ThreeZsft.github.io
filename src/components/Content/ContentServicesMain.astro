@@ -1,0 +1,323 @@
+---
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Paragraph from "@/components/Typography/Paragraph.astro";
+import { PROBLEMS } from "@/data/home.ts";
+import { uid } from "@/utils/uid.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** Advance through the four on its own until someone takes over. */
+  autoplay?: boolean;
+}
+
+const { render = true, autoplay = true } = Astro.props;
+const group = uid("services");
+---
+
+{
+  render && (
+    <div class="services-main_wrap" data-autoplay={autoplay ? "" : undefined}>
+      <div class="services-main_layout">
+       <div class="services-main_column">
+        <div class="services-main_intro" data-reveal="single">
+          <Eyebrow tag="h2">Services</Eyebrow>
+          <Heading tag="h3" variant="h2">
+            Four reasons people keep walking past. <em>Here's how each one gets fixed.</em>
+          </Heading>
+          <Paragraph class="services-main_sub">
+            I design and build for photographers, artists, musicians, and
+            makers.
+          </Paragraph>
+        </div>
+        <ul class="services-main_list">
+        {PROBLEMS.map((problem, index) => (
+          <li class="services-main_item">
+            <h4 class="services-main_heading">
+              <button
+                type="button"
+                class="services-main_control"
+                aria-expanded={index === 0 ? "true" : "false"}
+                aria-controls={`${group}-${index}`}
+              >
+                <span class="services-main_number" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span class="services-main_text">{problem.text}</span>
+                <span class="services-main_progress" aria-hidden="true" />
+              </button>
+            </h4>
+            <div class="services-main_panel" id={`${group}-${index}`}>
+              <Paragraph variant="small" maxWidth={64}>
+                {problem.sub}
+              </Paragraph>
+            </div>
+          </li>
+        ))}
+        </ul>
+       </div>
+       <div class="services-main_panels" aria-hidden="true">
+         {PROBLEMS.map((_, index) => (
+           <div class="services-main_panel-visual" data-index={index}>
+             <span>Service {index + 1} image</span>
+           </div>
+         ))}
+       </div>
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .services-main_wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+
+      /* Problems on the left, the fix pictured on the right. */
+      .services-main_layout {
+        display: grid;
+        gap: var(--space-7);
+        align-items: stretch;
+        @media (width >= 64rem) {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+      }
+
+      .services-main_column {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: var(--space-7);
+        max-width: 35rem;
+      }
+
+      .services-main_intro {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .services-main_list {
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Only the open service is shown; the rest wait a few percent to the
+         right so the swap reads as a slide rather than a cut. */
+      .services-main_panels {
+        position: relative;
+        min-height: 18rem;
+        border-radius: var(--radius-main);
+        overflow: clip;
+      }
+      .services-main_panel-visual {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background-color: var(--bone-sunken);
+        border: var(--border-width) solid var(--border);
+        border-radius: var(--radius-main);
+        font-size: var(--text-small);
+        letter-spacing: var(--letter-spacing-label);
+        text-transform: uppercase;
+        color: var(--text-2);
+        opacity: 0;
+        translate: 3% 0;
+        transition:
+          opacity var(--dur-base, 320ms) var(--ease-temper, ease),
+          translate var(--dur-base, 320ms) var(--ease-temper, ease);
+        &[data-active] {
+          opacity: 1;
+          translate: 0 0;
+        }
+      }
+
+      .services-main_item {
+        border-top: var(--border-width) solid var(--border);
+        transition: opacity var(--hover-duration) var(--hover-ease);
+        &:last-child {
+          border-bottom: var(--border-width) solid var(--border);
+        }
+      }
+
+      /* Hovering one problem quiets the others. */
+      @media (hover: hover) {
+        .services-main_list:hover .services-main_item:not(:hover) {
+          opacity: 0.5;
+        }
+      }
+
+      .services-main_control {
+        position: relative;
+        display: grid;
+        grid-template-columns: 2rem minmax(0, 1fr);
+        align-items: start;
+        gap: 1.25rem;
+        width: 100%;
+        padding-block: var(--space-4);
+        font-family: var(--display-family);
+        font-size: 1.44rem;
+        line-height: 1.2;
+        text-align: start;
+      }
+      .services-main_text {
+        padding-top: 0.3125rem;
+      }
+
+      /* A struck coin that inverts when its service is the open one. */
+      .services-main_number {
+        display: grid;
+        place-items: center;
+        width: 2rem;
+        height: 2rem;
+        border: var(--border-width) solid var(--text);
+        border-radius: var(--radius-round);
+        font-family: var(--body-family);
+        font-size: var(--text-small);
+        letter-spacing: 0;
+        color: var(--text);
+        margin-top: 0.25rem;
+        transition:
+          background-color var(--hover-duration) var(--hover-ease),
+          color var(--hover-duration) var(--hover-ease);
+      }
+
+      /* The five-second bar under the problem that is currently open. */
+      .services-main_progress {
+        position: absolute;
+        inset-inline: 0;
+        bottom: 0;
+        height: 0.125rem;
+        background-color: var(--heading-accent);
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      .services-main_panel {
+        display: grid;
+        grid-template-rows: 0fr;
+        padding-left: 3.25rem;
+        color: var(--text-2);
+        font-size: 1rem;
+        line-height: var(--line-height-large);
+        transition: grid-template-rows var(--dur-slow, 640ms) var(--ease-temper, ease);
+        > * {
+          overflow: hidden;
+          max-width: 48ch;
+        }
+      }
+
+      .services-main_item[data-open] {
+        .services-main_number {
+          background-color: var(--text);
+          color: var(--background);
+        }
+        .services-main_panel {
+          grid-template-rows: 1fr;
+          padding-bottom: var(--space-4);
+        }
+      }
+
+      .services-main_sub {
+        color: var(--text-2);
+      }
+    }
+  }
+</style>
+
+<script>
+  import { reduced } from "@/scripts/motion.ts";
+
+  const wrap = document.querySelector<HTMLElement>(".services-main_wrap");
+  const controls = [
+    ...(wrap?.querySelectorAll<HTMLButtonElement>(".services-main_control") || []),
+  ];
+  const panels = [
+    ...(wrap?.querySelectorAll<HTMLElement>(".services-main_panel-visual") || []),
+  ];
+
+  if (wrap && controls.length) {
+    const CYCLE = 5000;
+    // Autoplay is a flourish, not a way to read the page: it stays off when
+    // less movement is asked for, and stops for good once someone chooses.
+    const autoplays = wrap.dataset.autoplay !== undefined && !reduced();
+    let timer = 0;
+    let current = 0;
+
+    const show = (index: number, fromUser: boolean) => {
+      current = index;
+      controls.forEach((control, i) => {
+        const open = i === index;
+        control.setAttribute("aria-expanded", open ? "true" : "false");
+        const item = control.closest<HTMLElement>(".services-main_item");
+        if (item) item.toggleAttribute("data-open", open);
+        panels[i]?.toggleAttribute("data-active", open);
+        const bar = control.querySelector<HTMLElement>(".services-main_progress");
+        if (!bar) return;
+        bar.style.animation = "none";
+        // Force a reflow so the animation restarts on the newly opened item.
+        void bar.offsetWidth;
+        bar.style.transform = open && !autoplays ? "scaleX(1)" : "scaleX(0)";
+        if (open && autoplays) {
+          bar.style.animation = `services-progress ${CYCLE}ms linear forwards`;
+        }
+      });
+
+      clearTimeout(timer);
+      if (autoplays && !fromUser) {
+        timer = window.setTimeout(() => show((index + 1) % controls.length, false), CYCLE);
+      }
+    };
+
+    const stop = () => {
+      clearTimeout(timer);
+      for (const control of controls) {
+        const bar = control.querySelector<HTMLElement>(".services-main_progress");
+        if (bar) {
+          bar.style.animation = "none";
+          bar.style.transform =
+            control.getAttribute("aria-expanded") === "true"
+              ? "scaleX(1)"
+              : "scaleX(0)";
+        }
+      }
+    };
+
+    controls.forEach((control, index) => {
+      control.addEventListener("click", () => {
+        show(index, true);
+        stop();
+      });
+      control.addEventListener("focus", () => {
+        show(index, true);
+        stop();
+      });
+      control.addEventListener("pointerenter", () => {
+        if (index !== current) show(index, true);
+      });
+    });
+
+    // Once the pointer leaves the list entirely, let the cycle resume.
+    wrap.addEventListener("pointerleave", () => {
+      if (autoplays) show(current, false);
+    });
+
+    show(0, false);
+  }
+</script>
+
+<style is:global>
+  @keyframes services-progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+</style>

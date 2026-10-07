@@ -1,0 +1,79 @@
+---
+import { TESTIMONIAL } from "@/data/home.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+  /** The quote itself, without its surrounding marks. Nothing renders without one. */
+  quote?: string;
+  /** Who said it. */
+  attribution?: string;
+}
+
+const {
+  render = true,
+  quote = TESTIMONIAL.quote,
+  attribution = `${TESTIMONIAL.name}, ${TESTIMONIAL.business}, ${TESTIMONIAL.city}`,
+} = Astro.props;
+---
+
+{
+  render && quote && (
+    <figure class="quote-main_wrap" data-reveal="single">
+      <blockquote class="quote-main_words">&ldquo;{quote}&rdquo;</blockquote>
+      <figcaption class="quote-main_source">
+        <span class="quote-main_portrait" aria-hidden="true" />
+        {attribution}
+      </figcaption>
+    </figure>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* The one centred block on the page, opened by a hairline rule. */
+    .quote-main_wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-6);
+      padding-top: var(--section-space-medium);
+      border-top: var(--border-width) solid var(--border);
+      text-align: center;
+
+      .quote-main_words {
+        font-family: var(--display-family);
+        font-style: italic;
+        font-size: clamp(1.75rem, 3vw, 2.5rem);
+        line-height: 1.2;
+        max-width: 26ch;
+        text-wrap: balance;
+      }
+
+      /* The speaker's chip: a portrait well waiting for a face. */
+      .quote-main_source {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.375rem 0.875rem 0.375rem 0.375rem;
+        border: var(--border-width) solid var(--border);
+        border-radius: var(--radius-round);
+        background-color: var(--background-2);
+        font-family: var(--body-family);
+        font-size: var(--text-small);
+        letter-spacing: var(--letter-spacing-label-sm);
+        text-transform: uppercase;
+        color: var(--text-2);
+      }
+      .quote-main_portrait {
+        flex: none;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: var(--radius-round);
+        background-color: var(--bone-sunken);
+        border: var(--border-width) solid var(--border);
+      }
+    }
+  }
+</style>

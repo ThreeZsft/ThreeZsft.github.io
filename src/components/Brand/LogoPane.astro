@@ -1,0 +1,176 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"canvas"> {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true, class: className, ...rest } = Astro.props;
+---
+
+{
+  render && (
+    <canvas class:list={["logo-pane", className]} aria-hidden="true" {...rest} />
+  )
+}
+
+<style is:global>
+  @layer components {
+    .logo-pane {
+      flex: none;
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+  }
+</style>
+
+<script>
+  import { lerp, rafLoop, smoothstep } from "@/scripts/motion.ts";
+
+  const panes = [...document.querySelectorAll<HTMLCanvasElement>(".logo-pane")];
+
+  if (panes.length) {
+    // The mark is an arched window: two panes across, three down, the top
+    // row turned under the arch. At rest it holds still — near a pointer
+    // the panes lean toward it and warm to ember.
+    const COLS = 2;
+    const ROWS = 3;
+
+    let pointerX = -9999;
+    let pointerY = -9999;
+    window.addEventListener(
+      "pointermove",
+      (event) => {
+        pointerX = event.clientX;
+        pointerY = event.clientY;
+      },
+      { passive: true },
+    );
+    window.addEventListener(
+      "touchmove",
+      (event) => {
+        const touch = event.touches[0];
+        if (touch) {
+          pointerX = touch.clientX;
+          pointerY = touch.clientY;
+        }
+      },
+      { passive: true },
+    );
+
+    const states = panes.map((canvas) => ({
+      canvas,
+      ctx: canvas.getContext("2d"),
+      // Trailed pointer position, so the pull eases rather than snapping.
+      px: -9999,
+      py: -9999,
+      pull: 0,
+    }));
+
+    rafLoop(() => {
+      for (const state of states) {
+        const { canvas, ctx } = state;
+        if (!ctx) continue;
+        const rect = canvas.getBoundingClientRect();
+        if (!rect.width) continue;
+
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        if (canvas.width !== Math.round(rect.width * dpr)) {
+          canvas.width = Math.round(rect.width * dpr);
+          canvas.height = Math.round(rect.height * dpr);
+        }
+
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const reach = rect.width * 2;
+
+        const distance = Math.hypot(pointerX - cx, pointerY - cy);
+        const target = distance < reach ? smoothstep(1 - distance / reach) : 0;
+        state.pull = lerp(state.pull, target, 0.12);
+        state.px = lerp(state.px, pointerX, 0.18);
+        state.py = lerp(state.py, pointerY, 0.18);
+
+        const scale = canvas.width / rect.width;
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+        ctx.clearRect(0, 0, rect.width, rect.height);
+
+        // The window's geometry: an arched cap over two rows of panes, the
+        // gap reading as the muntin between them. The semicircle spans the
+        // window's width, so its radius follows from the cell size.
+        const gridHeight = rect.height * 0.82;
+        const cell = gridHeight / 3.6;
+        const gap = cell * 0.24;
+        const gridWidth = COLS * cell + (COLS - 1) * gap;
+        const radius = gridWidth / 2;
+        const originX = (rect.width - gridWidth) / 2;
+        const originY = (rect.height - gridHeight) / 2;
+        // Where the arch turns: the centre of its circle, in canvas space.
+        const archX = originX + gridWidth / 2;
+        const archY = originY + radius;
+
+        const localX = state.px - rect.left;
+        const localY = state.py - rect.top;
+
+        /* Each pane: its resting rect, and whether the arch clips it. */
+        const panes = [];
+        for (let col = 0; col < COLS; col++) {
+          const x = originX + col * (cell + gap);
+          panes.push({ x, y: originY, w: cell, h: radius, arch: true });
+          for (let row = 1; row < ROWS; row++) {
+            panes.push({
+              x,
+              y: originY + radius + gap + (row - 1) * (cell + gap),
+              w: cell,
+              h: cell,
+              arch: false,
+            });
+          }
+        }
+
+        for (const pane of panes) {
+          const restX = pane.x + pane.w / 2;
+          const restY = pane.y + pane.h / 2;
+          let x = restX;
+          let y = restY;
+
+          // Near a pointer the panes lean toward it, like light catching:
+          // they slide a little, and their shape shears the same way.
+          let shearX = 0;
+          let shearY = 0;
+          if (state.pull > 0.001) {
+            const gx = localX - x;
+            const gy = localY - y;
+            const gd = Math.hypot(gx, gy) || 1;
+            const near = Math.min(1, (gridHeight * 0.8) / gd);
+            const k = state.pull * 0.28 * near;
+            x += gx * k;
+            y += gy * k;
+            shearX = (gx / gd) * state.pull * near * 0.4;
+            shearY = (gy / gd) * state.pull * near * 0.4;
+          }
+
+          // Charcoal at rest, warming to ember as the pointer closes in.
+          ctx.fillStyle =
+            state.pull > 0.02
+              ? `rgba(${Math.round(22 + 210 * state.pull)}, ${Math.round(22 + 66 * state.pull)}, ${Math.round(26 + 4 * state.pull)}, 0.92)`
+              : "rgba(22, 22, 26, 0.92)";
+
+          const grow = 1 + state.pull * 0.08;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.transform(grow, shearY, shearX, grow, 0, 0);
+          if (pane.arch) {
+            // The cap: this pane's rect clipped to the arch's circle, both
+            // drawn in the pane's own space so they lean as one shape.
+            ctx.beginPath();
+            ctx.arc(archX - restX, archY - restY, radius, 0, Math.PI * 2);
+            ctx.clip();
+          }
+          ctx.fillRect(-pane.w / 2, -pane.h / 2, pane.w, pane.h);
+          ctx.restore();
+        }
+      }
+    });
+  }
+</script>

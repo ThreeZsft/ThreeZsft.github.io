@@ -1,0 +1,214 @@
+---
+import Availability from "@/components/Item/Availability.astro";
+import Eyebrow from "@/components/Typography/Eyebrow.astro";
+import Heading from "@/components/Typography/Heading.astro";
+import Button from "@/components/Button.astro";
+import { FAQS } from "@/data/home.ts";
+import { uid } from "@/utils/uid.ts";
+
+interface Props {
+  /** Set to `false` to skip rendering this component and its children. */
+  render?: boolean;
+}
+
+const { render = true } = Astro.props;
+const group = uid("faq");
+---
+
+{
+  render && (
+    <div class="faq-main_wrap">
+      <div class="faq-main_column">
+        <div class="faq-main_intro" data-reveal="single">
+          <Eyebrow tag="h2">Questions</Eyebrow>
+          <Heading tag="h3" variant="h2">
+            Questions people ask first
+          </Heading>
+        </div>
+        <ul class="faq-main_list">
+          {FAQS.map((faq, index) => (
+            <li class="faq-main_item" data-open={index === 0 ? "" : undefined}>
+              <h4 class="faq-main_heading">
+                <button
+                  type="button"
+                  class="faq-main_toggle"
+                  aria-expanded={index === 0 ? "true" : "false"}
+                  aria-controls={`${group}-${index}`}
+                >
+                  <span class="faq-main_number">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span class="faq-main_question">{faq.q}</span>
+                  <span class="faq-main_plus" aria-hidden="true">
+                    +
+                  </span>
+                </button>
+              </h4>
+              <div class="faq-main_answer" id={`${group}-${index}`}>
+                <p>{faq.a}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <aside class="faq-main_aside" data-reveal="single">
+        <Availability />
+        <h3 class="faq-main_aside_title">You've been browsing for a while now.</h3>
+        <p class="faq-main_aside_text">
+          Come in. Tell me about the space you're building for people, and I'll
+          reply within two business days, or skip the form and book a call.
+        </p>
+        <Button element="link" href="#contact">
+          Book a call
+        </Button>
+      </aside>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .faq-main_wrap {
+      width: 100%;
+      display: grid;
+      gap: var(--space-8);
+      align-items: start;
+      /* The answers take the room; the invitation holds a fixed column. */
+      @media (width >= 64rem) {
+        grid-template-columns: minmax(0, 1fr) 18.75rem;
+      }
+
+      .faq-main_column {
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem;
+      }
+      .faq-main_intro {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        max-width: 40rem;
+      }
+
+      .faq-main_item {
+        border-bottom: var(--border-width) solid var(--border);
+        transition: border-color var(--dur-quick, 180ms) var(--ease-temper, ease);
+      }
+      /* The open question holds the ember edge beneath it. */
+      .faq-main_item[data-open] {
+        border-bottom-color: var(--heading-accent);
+      }
+
+      .faq-main_toggle {
+        display: grid;
+        grid-template-columns: 2.5rem minmax(0, 1fr) 1.5rem;
+        gap: 1rem;
+        align-items: baseline;
+        width: 100%;
+        padding: 1.25rem 0;
+        text-align: start;
+        color: var(--text);
+      }
+
+      .faq-main_number {
+        font-family: var(--body-family);
+        font-size: var(--text-small);
+        letter-spacing: var(--letter-spacing-label-sm);
+        color: var(--text-2);
+      }
+
+      .faq-main_question {
+        font-family: var(--display-family);
+        font-weight: var(--primary-regular);
+        font-size: 1.44rem;
+        line-height: 1.2;
+        text-wrap: pretty;
+      }
+
+      /* The toggle mark turns with the stick-slip snap, not a glide. */
+      .faq-main_plus {
+        font-family: var(--display-family);
+        font-size: 1.44rem;
+        line-height: 1;
+        text-align: right;
+        transition: rotate var(--dur-base, 320ms) var(--ease-fault, ease);
+      }
+      .faq-main_item[data-open] .faq-main_plus {
+        rotate: 45deg;
+      }
+
+      .faq-main_answer {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows var(--dur-base, 320ms) var(--ease-temper, ease);
+
+        > p {
+          min-height: 0;
+          overflow: hidden;
+          padding: 0 2.5rem 0 3.5rem;
+          max-width: 62ch;
+          font-size: 1rem;
+          line-height: var(--line-height-huge);
+          transition: padding var(--dur-base, 320ms) var(--ease-temper, ease);
+        }
+      }
+      .faq-main_item[data-open] .faq-main_answer {
+        grid-template-rows: 1fr;
+
+        > p {
+          padding-bottom: 1.5rem;
+        }
+      }
+
+      /* The invitation keeps pace with the reader, ember edge on top. */
+      .faq-main_aside {
+        position: sticky;
+        top: 6.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        gap: 1.25rem;
+        padding: 1.75rem;
+        border: var(--border-width) solid transparent;
+        border-top-color: var(--heading-accent);
+        border-radius: 0.6875rem;
+        background:
+          var(--paper-surface) padding-box,
+          var(--paper-ring) border-box;
+        box-shadow: var(--paper-inset), var(--paper-lift);
+      }
+      .faq-main_aside_title {
+        font-family: var(--display-family);
+        font-weight: var(--primary-regular);
+        font-size: 1.728rem;
+        line-height: 1.15;
+      }
+      .faq-main_aside_text {
+        font-size: var(--text-small);
+        line-height: var(--line-height-large);
+        color: var(--text-2);
+      }
+    }
+  }
+</style>
+
+<script>
+  const items = [...document.querySelectorAll<HTMLElement>(".faq-main_item")];
+
+  for (const item of items) {
+    const toggle = item.querySelector<HTMLButtonElement>(".faq-main_toggle");
+    toggle?.addEventListener("click", () => {
+      const opening = !item.hasAttribute("data-open");
+      for (const other of items) {
+        other.toggleAttribute("data-open", opening && other === item);
+        other
+          .querySelector(".faq-main_toggle")
+          ?.setAttribute(
+            "aria-expanded",
+            String(opening && other === item),
+          );
+      }
+    });
+  }
+</script>
