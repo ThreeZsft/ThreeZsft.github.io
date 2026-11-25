@@ -29,7 +29,9 @@ try {
     for (const id of seen) q.append("exclude_paths", String(id));
     const res = await fetch(`${SITE}/api/v0/stats/hits?${q}`, {
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(30_000),
     });
+    console.log(`GoatCounter page ${page + 1}: HTTP ${res.status}`);
     if (!res.ok) throw new Error(`GoatCounter answered ${res.status}: ${await res.text()}`);
     const body = await res.json();
     for (const h of body.hits ?? []) {
