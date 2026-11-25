@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Which Titan Are You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a field dossier from inside the walls, terse and a little ominous
+   IDEA: a Survey Corps scouting ledger; each question is a report entry
+   PICTURE: the quiz itself, on a wall-stone panel; result card stamped with the titan's mark
+   COLOUR and TYPE: cloak green ground, bone white, steam crimson accent; Barlow Condensed + Inter
+   LAYOUT: modest title, quiz panel, then the nine-titan reference ledger */
+:root{color-scheme:light dark;
+--bg:light-dark(#eef0ea,#14201a);--panel:light-dark(#ffffff,#1d2d24);--ink:light-dark(#18231d,#ecefe7);
+--mute:light-dark(#536158,#a9b7ad);--line:light-dark(#d3d9d0,#2f4337);--cloak:light-dark(#2f4a3a,#2f4a3a);
+--accent:light-dark(#b3261e,#ff6b5e);--chip:light-dark(#e4e9e1,#25382d)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Barlow Condensed",Inter,sans-serif;font-weight:700;line-height:1.05;margin:0;text-wrap:balance}
+.top{background:var(--cloak);color:#ecefe7;padding:clamp(22px,4vw,40px) max(5vw,16px) clamp(56px,7vw,80px);position:relative}
+.top h1{font-size:clamp(34px,6vw,52px)}
+.top p{margin:8px 0 0;max-width:60ch;color:#c9d4cb}
+.wrap{max-width:820px;margin:0 auto}
+.quiz{max-width:820px;margin:-44px auto 0;padding:0 max(5vw,16px);position:relative}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:clamp(20px,4vw,36px);box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.bar{height:6px;background:var(--chip);border-radius:6px;overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.qn{color:var(--mute);font-size:14px;margin-bottom:6px}
+.q{font-size:clamp(26px,4vw,34px);margin-bottom:18px}
+.opts{display:grid;gap:10px}
+.opt{font:inherit;color:inherit;text-align:left;background:var(--chip);border:2px solid transparent;border-radius:10px;padding:12px 16px;min-height:48px;cursor:pointer}
+.opt:hover{border-color:var(--line)}
+.opt:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opt.sel{border-color:var(--accent);background:var(--panel)}
+.nav{display:flex;gap:10px;justify-content:space-between;margin-top:20px;flex-wrap:wrap}
+.btn{font:600 16px Inter,sans-serif;border-radius:10px;padding:12px 20px;min-height:48px;cursor:pointer;border:2px solid var(--ink);background:transparent;color:var(--ink)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+.res .mark{width:92px;height:92px;float:right;margin:0 0 10px 16px}
+.res .kicker{color:var(--accent);font-weight:600;font-size:15px}
+.res h2{font-size:clamp(38px,7vw,52px);margin:4px 0 10px}
+.res .power{color:var(--mute);margin:0 0 14px}
+.res p{margin:0 0 12px}
+.echo{margin:0 0 12px;padding-left:1.2em}.echo li{margin:3px 0}
+.res .runner{border-top:1px solid var(--line);padding-top:14px;margin-top:16px;color:var(--mute)}
+.meters{display:grid;gap:6px;margin:16px 0 0;clear:both}
+.m{display:grid;grid-template-columns:8.5em minmax(0,1fr) 2.5em;gap:10px;align-items:center;font-size:14px}
+.m b{font-weight:500}.m span{height:10px;background:var(--chip);border-radius:5px;overflow:hidden}
+.m span i{display:block;height:100%;background:var(--cloak)}
+:root[data-theme=dark] .m span i{background:#6fa486}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .m span i{background:#6fa486}}
+.m em{font-style:normal;text-align:right;color:var(--mute)}
+.band{padding:clamp(28px,4vw,64px) max(5vw,16px)}
+.band h2{font-size:clamp(32px,5vw,44px)}
+.lede{color:var(--mute);max-width:65ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:14px;margin-top:20px}
+.t{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.t h3{font-size:28px;display:flex;align-items:center;gap:10px}
+.t h3 svg{width:30px;height:30px;flex:none}
+.t .ab{margin:8px 0;color:var(--mute);font-size:15px}
+.t dl{margin:10px 0 0;font-size:15px}
+.t dt{font-weight:600;margin-top:8px}
+.t dd{margin:2px 0 0}
+.thread{margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--chip);font-size:15px}
+.thread b{color:var(--accent)}
+.foot{font-size:13px;color:var(--mute);text-align:center;padding:0 16px 32px}
+.note{font-size:14px;color:var(--mute);margin-top:18px}
+@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
+@media(max-width:600px){.res .mark{width:64px;height:64px}.m{grid-template-columns:6.5em minmax(0,1fr) 2.2em}}
+</style>
+<!-- Anonymous quiz stats via GoatCounter: no cookies, no personal data. Replace YOURCODE with your GoatCounter site code. -->
+<script data-goatcounter="https://YOURCODE.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+<h1>Which of the Nine Titans are you?</h1>
+<p>Ten conflicts, each one drawn from how the Titan holders handled war, betrayal and guilt in the story. Choose how you would respond, and find out whose power you would carry.</p>
+</div></header>
+
+<section class="quiz"><div class="card" id="stage" aria-live="polite"></div></section>
+
+<section class="band"><div class="wrap">
+<h2>The Nine, and the people who carried them</h2>
+<p class="lede">Every Titan power has passed through several hands, and each one seems to pick up holders who already share a certain shape of character. Here is each power, who held it, and the thread that runs through them.</p>
+<div class="grid" id="ledger"></div>
+<p class="note">Beyond the Nine are the Pure Titans: mindless Eldians transformed by spinal fluid, who wander and devour. They have no inheritor and no will of their own, so they sit outside this quiz.</p>
+</div></section>
+<p class="foot">This quiz counts anonymous stats only: which answers and results are picked. No cookies, no names, no personal data.</p>
+
+<script>
+{
+const T={
+fo:{n:"Founding Titan",c:"#c9a227",p:"Commands every Eldian and every Titan, and can rewrite Eldian memories and bodies through the Paths.",
+h:"Ymir Fritz, generations of Fritz and Reiss kings (Karl Fritz, Uri Reiss, Frieda Reiss), Grisha Yeager, Eren Yeager",
+th:"Burdened by history. Almost every holder is crushed by the weight of everything that came before, and responds either by surrendering to it (the kings' vow of peace) or by trying to end the whole cycle.",
+y:"You feel the weight of the bigger picture more than most. You think in generations, carry other people's problems as your own, and secretly want to be the one who finally breaks the pattern."},
+at:{n:"Attack Titan",c:"#b3261e",p:"Has always fought for freedom. Can receive memories from its future inheritors.",
+h:"Eren Kruger, Grisha Yeager, Eren Yeager",
+th:"Defiant and forward-moving. Each holder rebelled against the system that raised them and kept moving forward no matter the cost, even when that meant becoming the villain of someone else's story.",
+y:"You refuse to be caged by anyone's rules. You are driven, stubborn, and willing to burn bridges for what you believe freedom looks like. Nobody stops you once you've decided."},
+co:{n:"Colossal Titan",c:"#e06c2b",p:"Sixty metres of sheer scale. Transforms with the force of a bomb and can release scalding steam.",
+h:"Bertholdt Hoover, Armin Arlert",
+th:"Gentle hands, catastrophic power. Both holders were soft-spoken, hesitant and deeply thoughtful, and both struggled to make decisions for themselves, then were forced to wield the most destructive power of all.",
+y:"You are kinder and more cautious than your potential suggests. You'd rather someone else made the call, but when you finally act, the whole room feels it."},
+ar:{n:"Armored Titan",c:"#8a8f98",p:"Covered in hardened plates. Built to take hits, charge through walls and shield others.",
+h:"Reiner Braun",
+th:"The shield that cracks. Reiner wanted to be a hero, carried enormous guilt, and split himself into the soldier and the friend to survive. Protecting others is how he justifies existing.",
+y:"You're the dependable one. You take hits for your people and keep going, even when it's tearing you apart inside. You need to remember you're allowed to put the armour down."},
+fe:{n:"Female Titan",c:"#4a8ac4",p:"A versatile all-rounder that can harden any part of its body, crystallise itself and call Pure Titans with a scream.",
+h:"Annie Leonhart",
+th:"Detached and self-reliant. Annie treated the world as something to get through, trusted almost no one, and fought with ruthless precision. Underneath was one simple wish: to get home to her father.",
+y:"You keep your own counsel. Cool, capable and hard to read, you'd rather do it yourself than depend on anyone. The people who get past the walls find someone fiercely sincere."},
+be:{n:"Beast Titan",c:"#7a5c3e",p:"Takes an animal form unique to its holder. In Zeke's hands it could command Pure Titans and throw debris like artillery.",
+h:"Tom Ksaver, Zeke Yeager",
+th:"Scholarly and melancholic. Ksaver was a researcher haunted by grief, and Zeke inherited both his power and his sadness. Both looked at the world's suffering and reasoned their way to a quiet, terrible solution.",
+y:"You are analytical, well read and a little sad underneath it all. You see further than most and question things others take for granted, which can make you lonely."},
+ja:{n:"Jaw Titan",c:"#3f9b6b",p:"Small, fast and agile, with claws and jaws strong enough to crack hardened armour.",
+h:"Marcel Galliard, Ymir, Porco Galliard, Falco Grice",
+th:"Devoted to someone. Marcel protected his brother, Ymir lived for Historia, Porco fought for his brother's memory, and Falco for Gabi. Every holder's fire comes from loyalty to one person.",
+y:"You're quick, fierce and loyal. Competitive when you need to be, but your real engine is the people you love. You'd throw yourself in front of anything for them."},
+ca:{n:"Cart Titan",c:"#9b7ec8",p:"A quadruped of extraordinary endurance. Can stay transformed for months and carry equipment or a mounted cannon.",
+h:"Pieck Finger",
+th:"Patient and perceptive. Pieck is calm, sharp and quietly funny, the one who notices what everyone else misses and can keep going long after others burn out.",
+y:"You are the steady observer. Unflappable, warm and smarter than people give you credit for, you are the support everyone depends on without realising it."},
+wh:{n:"War Hammer Titan",c:"#5a6bb0",p:"Creates any weapon or structure from hardened material, and fights from a crystal hidden away from its titan body.",
+h:"Lara Tybur (with the Tybur family holding it in secret for generations)",
+th:"The hidden hand. The Tyburs shaped Marley's history from behind the curtain, and Lara fought from safety until the very end. Composed, strategic and bound to a family legacy.",
+y:"You prefer to work behind the scenes. Composed, strategic and resourceful, you build what's needed out of whatever is around you, and you carry a family or legacy close to your chest."}
+};
+const ORDER=["fo","at","co","ar","fe","be","ja","ca","wh"];
+const Q=[
+{q:"Your side is losing and command orders a retreat. You...",o:[
+["Go out alone and start fighting anyway.","at","Eren rushing into battle at Trost, and later attacking Liberio alone"],
+["Stay at the front and take the heaviest blows so the others can get away.","ar","Reiner shielding his comrades with the Armored Titan's body in Shiganshina"],
+["Wait for the order, then carry it out even if it's awful.","co","Bertholdt saying the mission must be done, then kicking in the gate"],
+["Look for a way to end it without anyone else dying.","fo","King Fritz renouncing war and the Reiss kings honouring his vow"],
+["Weigh the cost, then open fire anyway.","be","Zeke's rock barrage wiping out the Survey Corps charge"],
+["Hold my position and cover everyone, for as long as it takes.","ca","Pieck supporting Marley's forces with the mounted cannon"]]},
+{q:"Someone you trusted turns out to be on the other side.",o:[
+["Rage first and ask questions later.","at","Eren transforming in fury the moment Reiner and Bertholdt reveal themselves"],
+["Talk to them. Try to understand why.","co","Armin reaching out to Annie and, later, to the Marleyan warriors"],
+["Shrug. They're doing what they have to, and so would I.","fe","Annie's cold acceptance when her cover is blown in Stohess"],
+["Stand by them anyway if it protects my person.","ja","Ymir going with Reiner and Bertholdt to keep Historia safe"],
+["Make use of it. They're part of my plan now.","be wh","Zeke's double game, and the Tyburs steering Marley from the shadows"],
+["Freeze, because part of me is on their side too.","ar","Reiner slipping between 'soldier' and 'warrior' in front of Eren and Armin"]]},
+{q:"You're caught and cornered.",o:[
+["Seal myself away where nobody can reach me.","fe","Annie encasing herself in crystal beneath Stohess"],
+["Bluff my way through, then strike when they relax.","ca","Pieck walking up to the Yeagerists with her hands raised"],
+["Bite my way out.","ja","Porco and Ymir using the Jaw's strength to break through"],
+["Fight from somewhere safe, using a decoy body.","wh","Lara Tybur fighting from a crystal hidden underground"],
+["Take everything down with me in one blast.","co","Bertholdt's transformation in Shiganshina and Armin's own sacrifice"],
+["Keep talking until I find an angle.","be","Zeke working his captors from inside Levi's custody"],
+["Hand everything to the next person and accept what comes.","fo","Kruger passing his power to Grisha before the end"]]},
+{q:"You're asked to hurt someone innocent for the greater good.",o:[
+["I've already decided the world needs this.","at","Eren choosing to start the Rumbling"],
+["I'll make the call so nobody else has to.","be","Zeke's plan to end Eldia without further pain"],
+["I'll do it on orders and hate myself afterwards.","ar","Reiner carrying out the Wall Maria mission"],
+["Only if it gets me home.","fe","Annie fighting for the promise she made to her father"],
+["My family has made calls like this for generations. It's the job.","wh","The Tyburs keeping Marley's secret history"],
+["I'd hesitate and cry, but I'd still go through with it.","co","Bertholdt's tears before attacking the Survey Corps"],
+["I'd put myself in harm's way instead.","ja","Marcel pushing Reiner out of the way of Ymir's jaws"],
+["I'd rather give up my power than use it that way.","fo","Frieda and Uri holding the Founder's power without unleashing it"]]},
+{q:"The war drags on for years. How do you last?",o:[
+["Save my strength and outlast everyone.","ca","Pieck staying transformed for months at a time"],
+["Stay in front and keep absorbing the punishment.","ar","Reiner's years on the Marleyan front lines"],
+["Learn something new from every loss.","at","Eren learning to harden and coming back stronger each time"],
+["Let what I build do the fighting.","wh","The War Hammer's spears and structures doing the work"],
+["Pick them off from a distance.","be","Zeke's long-range bombardment"],
+["Hit once, decisively, then disappear.","fe","Annie's raid on the 57th expedition"]]},
+{q:"A rival keeps getting in your way.",o:[
+["Mock them and fight them head on.","ja","Porco's open contempt for Reiner"],
+["Keep going. Nobody stands in my way.","at","Eren's rematches with Reiner"],
+["Let them think they've won.","fe ca","Annie's calm misdirection and Pieck's poker face"],
+["Watch them quietly and be ready if they slip.","wh","The Tyburs letting Marley believe it was in charge"],
+["Admit we might not be so different.","ar","Reiner telling Eren they are the same"],
+["Try to win them over with a bigger plan.","be","Zeke recruiting Eren as his 'brother'"]]},
+{q:"Your past finally catches up with you.",o:[
+["I break apart under the guilt but keep turning up.","ar","Reiner carrying the weight of Shiganshina for years"],
+["I double down. Regret changes nothing.","at","Eren refusing to stop once the Rumbling began"],
+["I go cold so it can't touch me.","fe","Annie's distance from everyone around her"],
+["I lean on my one person.","ja","Ymir and Historia's bond"],
+["I let the generations before me decide.","fo","Frieda's mind bent by the first king's ideals"],
+["I explain it with a philosophy.","be","Zeke's reasoning about why Eldians should never be born"]]},
+{q:"When it comes down to it, who do you fight for?",o:[
+["Freedom itself.","at","Eren's lifelong obsession with what lies beyond the walls"],
+["My comrades on both sides.","ar","Reiner's loyalty to the 104th and to the Marleyan warriors"],
+["One person.","ja","Falco for Gabi, Ymir for Historia, Porco for Marcel"],
+["My father or my family.","fe wh","Annie for her father, the Tyburs for their name"],
+["Everyone, enemies included.","co","Armin trying to save both Paradis and Marley"],
+["A future where the curse is over.","fo be","Ymir Fritz finally released and Zeke's quiet final wish"],
+["Whoever is next to me right now.","ca","Pieck's loyalty to the warriors at her side"]]},
+{q:"There's a chance to negotiate.",o:[
+["Take it. Fighting is the last resort.","co","Armin negotiating with Pyxis, and later at the peace talks"],
+["Pointless. Talking won't change their minds.","at","Eren rejecting talks for the Rumbling"],
+["Give a speech the whole world hears while the trap closes.","wh","Willy Tybur's declaration of war in Liberio"],
+["Deal with both sides in secret.","be","Zeke playing Marley and Paradis against each other"],
+["Offer peace by giving up my power.","fo","The first king's vow and Historia's family"],
+["Say nothing and watch the room.","ca fe","Pieck's quiet reads and Annie's silence"]]},
+{q:"When the dust finally settles, you...",o:[
+["Wonder whether any of it was worth it.","ar","Reiner after the war ends"],
+["Are already planning the next fight.","at","Eren never stopping"],
+["Vanish.","fe","Annie in her crystal for years"],
+["Start rebuilding.","co","Armin as an ambassador for peace"],
+["Remember the people who died.","ja","Porco and Falco honouring the Galliard legacy"],
+["Feel relief that it's finally over.","be fo","Zeke's peaceful last moment and Ymir's release"],
+["Make sure everyone gets home.","ca","Pieck looking after the survivors"]]}
+];
+const mark=(c,s=100)=>`<svg viewBox="0 0 100 100" width="${s}" height="${s}" aria-hidden="true"><path d="M50 4 92 26v48L50 96 8 74V26Z" fill="${c}"/><path d="M50 4 92 26v48L50 96Z" fill="#000" opacity=".15"/><path d="M50 22 70 50 50 78 30 50Z" fill="#fff" opacity=".85"/><path d="M50 22 70 50 50 50Z" fill="#fff"/></svg>`;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const stage=document.getElementById("stage");
+const sent=new Set();
+function track(path,title,once){
+if(once&&sent.has(path))return;sent.add(path);
+try{const go=()=>window.goatcounter&&window.goatcounter.count&&window.goatcounter.count({path:"quiz/"+path,title:title||path,event:true});
+if(window.goatcounter&&window.goatcounter.count)go();else setTimeout(go,1500)}catch(_){}
+}
+let i=0,ans=Array(Q.length).fill(null);
+function render(){
+if(i>=Q.length)return result();
+const q=Q[i];
+stage.innerHTML=`<div class="bar"><i style="width:${(i/Q.length)*100}%"></i></div>
+<div class="qn">Question ${i+1} of ${Q.length}</div><h2 class="q">${esc(q.q)}</h2>
+<div class="opts" role="radiogroup">${q.o.map((o,k)=>`<button class="opt${ans[i]===k?" sel":""}" role="radio" aria-checked="${ans[i]===k}" data-k="${k}">${esc(o[0])}</button>`).join("")}</div>
+<div class="nav"><button class="btn" id="back" ${i?"":"disabled"}>Back</button><button class="btn pri" id="next" ${ans[i]===null?"disabled":""}>${i===Q.length-1?"See my Titan":"Next"}</button></div>`;
+}
+function scores(){
+const s={};ORDER.forEach(k=>s[k]=0);
+ans.forEach((a,qi)=>{if(a===null)return;const keys=Q[qi].o[a][1].split(" ");keys.forEach(k=>s[k]+=keys.length>1?1:1.5)});
+return ORDER.map(k=>[k,s[k]]).sort((a,b)=>b[1]-a[1]);
+}
+function echo(k){
+const hits=ans.map((a,qi)=>a===null?null:Q[qi].o[a]).filter(o=>o&&o[1].split(" ").includes(k)).map(o=>o[2]);
+return hits.length?`<p><b>Your answers matched:</b></p><ul class="echo">${hits.slice(0,5).map(h=>`<li>${esc(h)}</li>`).join("")}</ul>`:"";
+}
+function result(){
+const r=scores(),[top,second]=r,t=T[top[0]],t2=T[second[0]],max=r[0][1]||1;
+track("complete","Quiz completed",true);track("result/"+top[0],"Result: "+t.n,true);track("runner-up/"+second[0],"Runner-up: "+t2.n,true);
+stage.innerHTML=`<div class="res">${mark(t.c).replace('width="100" height="100"','class="mark"')}
+<div class="kicker">Your inheritance</div><h2>${t.n}</h2><p class="power">${esc(t.p)}</p>
+<p>${esc(t.y)}</p><p><b>You share this with:</b> ${esc(t.h)}.</p>
+${echo(top[0])}<p class="runner">Close second: <b>${t2.n}</b>. ${esc(t2.y.split(". ")[0])}.</p>
+<div class="meters">${r.map(([k,v])=>`<div class="m"><b>${T[k].n.replace(" Titan","")}</b><span><i style="width:${Math.round(v/max*100)}%"></i></span><em>${Math.round(v/max*100)}%</em></div>`).join("")}</div>
+<div class="nav"><button class="btn" id="copy">Copy my result</button><button class="btn pri" id="again">Take it again</button></div></div>`;
+}
+stage.addEventListener("click",e=>{
+const o=e.target.closest(".opt");
+if(o){ans[i]=+o.dataset.k;render();document.getElementById("next").focus();return}
+const id=e.target.id;
+if(id==="next"&&ans[i]!==null){if(i===0)track("start","Quiz started",true);const o=Q[i].o[ans[i]];track(`q${i+1}/a${ans[i]+1}-${o[1].replace(" ","-")}`,`Q${i+1}: ${o[0]}`,true);i++;render();stage.scrollIntoView({block:"nearest"})}
+if(id==="back"&&i>0){i--;render()}
+if(id==="again"){track("retake","Retook quiz");sent.clear();i=0;ans=Array(Q.length).fill(null);render()}
+if(id==="copy"){track("copy","Copied result");const r=scores();const txt=`I got the ${T[r[0][0]].n} (runner-up: ${T[r[1][0]].n}) on the Which Titan Are You quiz.`;
+try{navigator.clipboard.writeText(txt).then(()=>{e.target.textContent="Copied"},()=>{e.target.textContent="Couldn't copy"})}catch(_){e.target.textContent="Couldn't copy"}}
+});
+document.getElementById("ledger").innerHTML=ORDER.map(k=>{const t=T[k];return `<article class="t"><h3>${mark(t.c,30)}${t.n}</h3>
+<p class="ab">${esc(t.p)}</p><dl><dt>Known holders</dt><dd>${esc(t.h)}</dd></dl>
+<div class="thread"><b>Shared temperament.</b> ${esc(t.th)}</div></article>`}).join("");
+render();
+}
+</script>
+</body>
+</html>
