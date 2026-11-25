@@ -31,7 +31,7 @@ jobs:
       - name: Fetch Titan quiz stats from GoatCounter
         run: node scripts/fetch-quiz-stats.mjs
         env:
-          GOATCOUNTER_TOKEN: ${{ secrets.GOATCOUNTER_TOKEN }}
+          GOATCOUNTER_TOKEN: ${{ secrets.GOATCOUNTER_TOKEN || vars.GOATCOUNTER_TOKEN }}
 
       - name: Build Astro site
         uses: withastro/action@v2
