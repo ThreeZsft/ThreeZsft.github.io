@@ -7,6 +7,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Rebuild every 6 hours so the Titan quiz results page picks up new GoatCounter numbers.
+  schedule:
+    - cron: "17 */6 * * *"
 
 permissions:
   contents: read
@@ -24,6 +27,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Fetch Titan quiz stats from GoatCounter
+        run: node scripts/fetch-quiz-stats.mjs
+        env:
+          GOATCOUNTER_TOKEN: ${{ secrets.GOATCOUNTER_TOKEN }}
 
       - name: Build Astro site
         uses: withastro/action@v2
